@@ -1,44 +1,16 @@
 import { create } from 'zustand'
 import { transition } from '../core/engine/GameStateMachine'
+import { createPRNG } from '../core/random/prng'
+import { generateSnakesAndLadders } from '../core/random/BoardGenerator'
+import { generateChallengeBlocks } from '../core/random/BoardGenerator'
 import type { GameState, Player } from '../core/types/index'
 import type { ChallengeResult } from '../core/engine/GameStateMachine'
 
-// ─── Initial Board ───────────────────────────────────
-const INITIAL_BOARD: GameState['board'] = {
-  cells: [],
-  snakes: [
-    { head: 17, tail: 7 },
-    { head: 54, tail: 34 },
-    { head: 62, tail: 19 },
-    { head: 64, tail: 60 },
-    { head: 87, tail: 24 },
-    { head: 93, tail: 73 },
-  ],
-  ladders: [
-    { bottom: 4, top: 14 },
-    { bottom: 9, top: 31 },
-    { bottom: 20, top: 38 },
-    { bottom: 28, top: 84 },
-    { bottom: 40, top: 59 },
-    { bottom: 51, top: 67 },
-  ],
-  challengeBlocks: [
-    { cellIndex: 10, challengeType: 'dare-card' },
-    { cellIndex: 25, challengeType: 'lucky-draw' },
-    { cellIndex: 44, challengeType: 'memory-match' },
-    { cellIndex: 56, challengeType: 'swap-position' },
-    { cellIndex: 70, challengeType: 'dare-card' },
-    { cellIndex: 80, challengeType: 'lucky-draw' },
-  ],
-}
-
 // ─── Store Types ─────────────────────────────────────
 interface GameStore {
-  // State
   gameState: GameState | null
 
-  // Actions
-  startNewGame: (playerNames: string[]) => void
+  startNewGame: (playerNames: string[], seed?: number) => void
   rollDice: () => void
   movePlayer: () => void
   landOnCell: () => void
@@ -50,7 +22,13 @@ interface GameStore {
 export const useGameStore = create<GameStore>((set, get) => ({
   gameState: null,
 
-  startNewGame: (playerNames) => {
+  startNewGame: (playerNames, seed) => {
+    const gameSeed = seed ?? Math.floor(Math.random() * 2 ** 32)
+    const prng = createPRNG(gameSeed)
+
+    const { snakes, ladders, occupied } = generateSnakesAndLadders(prng)
+    const challengeBlocks = generateChallengeBlocks(prng, occupied)
+
     const colors = ['#4ade80', '#f472b6', '#60a5fa', '#fb923c']
     const players: Player[] = playerNames.map((name, i) => ({
       id: `p${i + 1}`,
@@ -61,14 +39,19 @@ export const useGameStore = create<GameStore>((set, get) => ({
     }))
 
     const initialState: GameState = {
-      board: INITIAL_BOARD,
+      board: {
+        cells: [],
+        snakes,
+        ladders,
+        challengeBlocks,
+      },
       players,
       currentPlayerIndex: 0,
       phase: 'idle',
       lastDiceResult: null,
       activeChallenge: null,
       eventLog: [],
-      seed: Math.floor(Math.random() * 2 ** 32),
+      seed: gameSeed,
       winner: null,
     }
 
