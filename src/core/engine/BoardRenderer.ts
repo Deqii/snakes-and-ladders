@@ -1,4 +1,5 @@
 import type { Board, Player } from '../types/index'
+import { useUIStore } from '../../stores/uiStore'
 
 // ─── Constants ───────────────────────────────────────
 const COLORS = {
@@ -33,6 +34,11 @@ export class BoardRenderer {
   private cellSize: number = 0
   private board: Board | null = null
   private players: Player[] = []
+  private animationQueue: number[] = []
+  private animatingPlayerIndex: number = -1
+  private animProgress: number = 0
+  private animFromPos: number = 0
+  private animToPos: number = 0
   private rafId: number | null = null
   private observer: ResizeObserver
 
@@ -60,6 +66,55 @@ export class BoardRenderer {
   setPlayers(players: Player[]): void {
     this.players = players
     this.draw()
+  }
+
+  animatePlayerMove(playerIndex: number, path: number[]): void {
+    this.animatingPlayerIndex = playerIndex
+    this.animationQueue = path
+    useUIStore.getState().setIsAnimating(true)
+    this.playNextStep()
+  }
+
+  private playNextStep(): void {
+    const next = this.animationQueue.shift()
+    if (next === undefined) {
+      this.animatingPlayerIndex = -1
+      useUIStore.getState().setIsAnimating(false)
+      return
+    }
+
+    const player = this.players[this.animatingPlayerIndex]
+    if (!player) return
+
+    this.animFromPos = player.position
+    this.animToPos = next
+    this.animProgress = 0
+
+    const duration = 150
+    const startTime = performance.now()
+
+    const step = (now: number) => {
+      this.animProgress = Math.min((now - startTime) / duration, 1)
+
+      // Update player position visually
+      if (this.players[this.animatingPlayerIndex]) {
+        this.players = this.players.map((p, i) =>
+          i === this.animatingPlayerIndex
+            ? { ...p, position: this.animProgress < 1 ? this.animFromPos : this.animToPos }
+            : p,
+        )
+      }
+
+      this.draw()
+
+      if (this.animProgress < 1) {
+        requestAnimationFrame(step)
+      } else {
+        this.playNextStep()
+      }
+    }
+
+    requestAnimationFrame(step)
   }
 
   start(): void {
