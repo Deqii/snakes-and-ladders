@@ -1,9 +1,19 @@
-import type { Snake, Ladder } from '../types/index'
-import { type PRNG, randomInt } from './prng'
+import type { Snake, Ladder, ChallengeBlock, ChallengeType } from '../types/index'
+import { type PRNG, randomInt, randomPick } from './prng'
 
 const SNAKE_COUNT = 6
 const LADDER_COUNT = 6
 const MAX_RETRY = 100
+const MIN_CHALLENGE_BLOCKS = 10
+const MAX_CHALLENGE_BLOCKS = 15
+const MIN_SPACING = 3
+
+const CHALLENGE_TYPES: ChallengeType[] = [
+  'dare-card',
+  'lucky-draw',
+  'swap-position',
+  'memory-match',
+]
 
 // ─── Helpers ─────────────────────────────────────────
 function isOccupied(cell: number, occupied: Set<number>): boolean {
@@ -78,4 +88,31 @@ export function generateSnakesAndLadders(
   })
 
   return { snakes, ladders, occupied }
+}
+
+// ─── Generate Challenge Blocks ───────────────────────
+export function generateChallengeBlocks(prng: PRNG, occupied: Set<number>): ChallengeBlock[] {
+  const count = randomInt(prng, MIN_CHALLENGE_BLOCKS, MAX_CHALLENGE_BLOCKS)
+  const blocks: ChallengeBlock[] = []
+  const localOccupied = new Set(occupied)
+  let attempts = 0
+
+  while (blocks.length < count && attempts < MAX_RETRY * count) {
+    attempts++
+    const cellIndex = randomInt(prng, 2, 99)
+
+    if (isOccupied(cellIndex, localOccupied)) continue
+
+    // Check minimum spacing
+    const tooClose = blocks.some((b) => Math.abs(b.cellIndex - cellIndex) < MIN_SPACING)
+    if (tooClose) continue
+
+    blocks.push({
+      cellIndex,
+      challengeType: randomPick(prng, CHALLENGE_TYPES),
+    })
+    localOccupied.add(cellIndex)
+  }
+
+  return blocks
 }
