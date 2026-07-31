@@ -1,4 +1,4 @@
-import type { Board } from '../types/index'
+import type { Board, Player } from '../types/index'
 
 // ─── Constants ───────────────────────────────────────
 const COLORS = {
@@ -32,6 +32,7 @@ export class BoardRenderer {
   private ctx: CanvasRenderingContext2D
   private cellSize: number = 0
   private board: Board | null = null
+  private players: Player[] = []
   private rafId: number | null = null
   private observer: ResizeObserver
 
@@ -53,6 +54,11 @@ export class BoardRenderer {
   // ─── Public API ────────────────────────────────────
   setBoard(board: Board): void {
     this.board = board
+    this.draw()
+  }
+
+  setPlayers(players: Player[]): void {
+    this.players = players
     this.draw()
   }
 
@@ -103,6 +109,7 @@ export class BoardRenderer {
       this.drawSnakes()
       this.drawLadders()
       this.drawChallengeBlocks()
+      this.drawTokens()
     }
   }
 
@@ -228,6 +235,55 @@ export class BoardRenderer {
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
       ctx.fillText('?', x + cellSize / 2, y + cellSize / 2)
+    }
+  }
+
+  // ─── Draw Tokens ───────────────────────────────────
+  private drawTokens(): void {
+    const { ctx, cellSize } = this
+
+    // Group players by position
+    const grouped = new Map<number, Player[]>()
+    for (const player of this.players) {
+      const existing = grouped.get(player.position) ?? []
+      grouped.set(player.position, [...existing, player])
+    }
+
+    for (const [position, players] of grouped) {
+      const { x, y } = cellToXY(position, cellSize)
+      const cx = x + cellSize / 2
+      const cy = y + cellSize / 2
+
+      // Offset layout for multiple players on same cell
+      const offsets: { dx: number; dy: number }[] = [
+        { dx: 0, dy: 0 },
+        { dx: cellSize * 0.25, dy: 0 },
+        { dx: 0, dy: cellSize * 0.25 },
+        { dx: cellSize * 0.25, dy: cellSize * 0.25 },
+      ]
+
+      players.forEach((player, i) => {
+        const offset = offsets[i] ?? { dx: 0, dy: 0 }
+        const tx = cx + offset.dx - (players.length > 1 ? cellSize * 0.12 : 0)
+        const ty = cy + offset.dy - (players.length > 1 ? cellSize * 0.12 : 0)
+        const radius = cellSize * (players.length > 1 ? 0.18 : 0.28)
+
+        // Circle
+        ctx.beginPath()
+        ctx.arc(tx, ty, radius, 0, Math.PI * 2)
+        ctx.fillStyle = player.color
+        ctx.fill()
+        ctx.strokeStyle = '#ffffff'
+        ctx.lineWidth = 1.5
+        ctx.stroke()
+
+        // Initial
+        ctx.fillStyle = '#ffffff'
+        ctx.font = `bold ${radius * 1.1}px Inter, sans-serif`
+        ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
+        ctx.fillText(player.name[0]?.toUpperCase() ?? '?', tx, ty)
+      })
     }
   }
 }
