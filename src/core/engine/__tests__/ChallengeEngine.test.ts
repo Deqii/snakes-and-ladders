@@ -62,7 +62,7 @@ describe('ChallengeEngine', () => {
     })
 
     it('dare-skip: moves player back 1', () => {
-      const next = resolveChallenge(challengeState, { type: 'dare-skip' })
+      const next = resolveChallenge(challengeState, { type: 'dare-skip', steps: 1 })
       expect(next.players[0]?.position).toBe(14)
     })
 

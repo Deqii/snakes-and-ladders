@@ -82,14 +82,14 @@ describe('GameStateMachine', () => {
       expect(next.players[0]?.position).toBe(30)
     })
 
-    it('clamps position to 100', () => {
+    it('clamps position with bounce back rule', () => {
       const rollingState = {
         ...mockState,
         phase: 'rolling' as const,
         players: [{ ...mockState.players[0]!, position: 98 }],
       }
       const next = transition(rollingState, { type: 'MOVE_PLAYER', steps: 6 })
-      expect(next.players[0]?.position).toBe(100)
+      expect(next.players[0]?.position).toBe(96)
     })
   })
 
@@ -137,7 +137,7 @@ describe('GameStateMachine', () => {
   })
 
   describe('RESOLVE_CHALLENGE', () => {
-    it('moves player back 1 on dare-skip', () => {
+    it('moves player back on dare-skip', () => {
       const challengeState = {
         ...mockState,
         phase: 'on-challenge' as const,
@@ -145,7 +145,7 @@ describe('GameStateMachine', () => {
       }
       const next = transition(challengeState, {
         type: 'RESOLVE_CHALLENGE',
-        result: { type: 'dare-skip' },
+        result: { type: 'dare-skip', steps: 1 },
       })
       expect(next.players[0]?.position).toBe(14)
     })

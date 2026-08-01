@@ -5,6 +5,7 @@ import { generateSnakesAndLadders } from '../core/random/BoardGenerator'
 import { generateChallengeBlocks } from '../core/random/BoardGenerator'
 import type { GameState, Player } from '../core/types/index'
 import type { ChallengeResult } from '../core/engine/GameStateMachine'
+import { resolveChallenge as engineResolveChallenge } from '../core/engine/ChallengeEngine'
 
 // ─── Store Types ─────────────────────────────────────
 interface GameStore {
@@ -78,17 +79,35 @@ export const useGameStore = create<GameStore>((set, get) => ({
   landOnCell: () => {
     const { gameState } = get()
     if (!gameState) return
-    set({ gameState: transition(gameState, { type: 'LAND_ON_CELL' }) })
+
+    const currentPlayer = gameState.players[gameState.currentPlayerIndex]
+    if (!currentPlayer) return
+
+    const challengeBlock = gameState.board.challengeBlocks.find(
+      (c) => c.cellIndex === currentPlayer.position,
+    )
+
+    if (challengeBlock) {
+      set({
+        gameState: {
+          ...gameState,
+          phase: 'on-challenge',
+          activeChallenge: {
+            type: challengeBlock.challengeType,
+            cellIndex: challengeBlock.cellIndex,
+          },
+        },
+      })
+    } else {
+      set({ gameState: transition(gameState, { type: 'LAND_ON_CELL' }) })
+    }
   },
 
   resolveChallenge: (result) => {
     const { gameState } = get()
     if (!gameState) return
     set({
-      gameState: transition(gameState, {
-        type: 'RESOLVE_CHALLENGE',
-        result,
-      }),
+      gameState: engineResolveChallenge(gameState, result),
     })
   },
 
