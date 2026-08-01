@@ -54,7 +54,11 @@ export class BoardRenderer {
     })
     this.observer.observe(canvas.parentElement ?? canvas)
 
-    this.resize()
+    // Wait for DOM to be ready before first resize
+    setTimeout(() => {
+      this.resize()
+      this.draw()
+    }, 0)
   }
 
   // ─── Public API ────────────────────────────────────
@@ -141,12 +145,18 @@ export class BoardRenderer {
   private resize(): void {
     const dpr = window.devicePixelRatio ?? 1
     const parent = this.canvas.parentElement
-    const size = parent ? Math.min(parent.clientWidth, parent.clientHeight) : 500
+    const size =
+      parent && parent.clientWidth > 0
+        ? Math.min(parent.clientWidth, parent.clientHeight || parent.clientWidth)
+        : 500
 
     this.canvas.width = size * dpr
     this.canvas.height = size * dpr
     this.canvas.style.width = `${size}px`
     this.canvas.style.height = `${size}px`
+
+    // Reset transform before scaling to prevent accumulation
+    this.ctx.setTransform(1, 0, 0, 1, 0, 0)
     this.ctx.scale(dpr, dpr)
     this.cellSize = size / 10
   }

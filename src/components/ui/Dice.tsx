@@ -40,13 +40,18 @@ export function Dice() {
       setIsRolling(false)
 
       // Build path for animation
+      const path: number[] = []
       const currentPlayer = players?.[currentPlayerIndex ?? 0]
       const steps = useGameStore.getState().gameState?.lastDiceResult ?? 1
       const startPos = currentPlayer?.position ?? 1
-      const path: number[] = []
 
       for (let i = 1; i <= steps; i++) {
-        path.push(Math.min(startPos + i, 100))
+        const rawPos = startPos + i
+        if (rawPos > 100) {
+          path.push(100 - (rawPos - 100))
+        } else {
+          path.push(rawPos)
+        }
       }
 
       // Animate then update state
@@ -56,14 +61,20 @@ export function Dice() {
           () => {
             movePlayer()
             landOnCell()
-            endTurn()
+            const currentPhase = useGameStore.getState().gameState?.phase
+            if (currentPhase === 'turn-end') {
+              endTurn()
+            }
           },
           steps * 150 + 100,
         )
       } else {
         movePlayer()
         landOnCell()
-        endTurn()
+        const latestPhase = useGameStore.getState().gameState?.phase
+        if (latestPhase === 'turn-end') {
+          endTurn()
+        }
       }
     }, 1000)
   }, [

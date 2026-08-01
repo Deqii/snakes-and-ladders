@@ -10,7 +10,7 @@ export type GameAction =
 
 export type ChallengeResult =
   | { type: 'dare-done' }
-  | { type: 'dare-skip' }
+  | { type: 'dare-skip'; steps: number }
   | { type: 'lucky-buff' }
   | { type: 'lucky-debuff' }
   | { type: 'swap-done'; targetPlayerId: string }
@@ -70,7 +70,16 @@ export function transition(state: GameState, action: GameAction): GameState {
     case 'MOVE_PLAYER': {
       assertValidTransition(state.phase, 'moving')
       const player = getCurrentPlayer(state)
-      let newPosition = clamp(player.position + action.steps, 1, 100)
+      const rawPosition = player.position + action.steps
+
+      // Bounce back if exceeds 100
+      let newPosition: number
+      if (rawPosition > 100) {
+        const overflow = rawPosition - 100
+        newPosition = 100 - overflow
+      } else {
+        newPosition = rawPosition
+      }
 
       // Check snake
       const snake = state.board.snakes.find((s) => s.head === newPosition)
@@ -114,7 +123,7 @@ export function transition(state: GameState, action: GameAction): GameState {
 
       switch (action.result.type) {
         case 'dare-skip':
-          newPosition = clamp(player.position - 1, 1, 100)
+          newPosition = clamp(player.position - action.result.steps, 1, 100)
           break
         case 'lucky-buff':
           // handled in next turn via isSkipNextTurn flag repurposed as buff

@@ -1,0 +1,26 @@
+export const DARE_CARDS = [
+  'Nyanyikan 1 baris lagu favoritmu sekarang',
+  'Lakukan 10 push-up',
+  'Ceritakan momen paling memalukan dalam hidupmu',
+  'Tiru gaya bicara pemain di sebelah kananmu selama 1 menit',
+  'Telepon seseorang dan ucapkan "Aku sayang kamu" tanpa penjelasan',
+  'Lakukan gerakan dansa selama 30 detik',
+  'Ceritakan rahasia kecil yang belum pernah kamu ceritakan',
+  'Tiru suara hewan yang ditentukan pemain lain',
+  'Lakukan 15 jumping jack',
+  'Ucapkan tongue twister 3x tanpa salah: "She sells seashells by the seashore"',
+  'Foto selfie dengan ekspresi paling aneh dan tunjukkan ke semua pemain',
+  'Berbicara dengan aksen berbeda selama 2 giliran berikutnya',
+  'Peragakan adegan film favoritmu tanpa suara',
+  'Sebutkan 10 nama hewan dalam 10 detik',
+  'Lakukan plank selama 30 detik',
+  'Ceritakan hal yang paling kamu syukuri hari ini',
+  'Tiru cara jalan pemain yang kamu pilih',
+  'Nyanyikan lagu anak-anak dengan suara opera',
+  'Sebutkan 5 fakta unik tentang dirimu',
+  'Lakukan gerakan robot selama 30 detik',
+  'Tertawa sekeras mungkin selama 10 detik',
+  'Peragakan profesi yang ditentukan pemain lain tanpa bicara',
+] as const
+
+export type DareCard = (typeof DARE_CARDS)[number]
