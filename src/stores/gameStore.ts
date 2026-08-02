@@ -16,6 +16,7 @@ interface GameStore {
   movePlayer: () => void
   landOnCell: () => void
   resolveChallenge: (result: ChallengeResult) => void
+  stayTurn: () => void
   endTurn: () => void
 }
 
@@ -37,6 +38,7 @@ export const useGameStore = create<GameStore>((set, get) => ({
       color: colors[i] ?? '#ffffff',
       position: 1,
       isSkipNextTurn: false,
+      hasDoubleDice: false,
     }))
 
     const initialState: GameState = {
@@ -108,6 +110,17 @@ export const useGameStore = create<GameStore>((set, get) => ({
     if (!gameState) return
     set({
       gameState: engineResolveChallenge(gameState, result),
+    })
+  },
+
+  stayTurn: () => {
+    const { gameState } = get()
+    if (!gameState) return
+    set({
+      gameState: {
+        ...gameState,
+        phase: 'idle',
+      },
     })
   },
 

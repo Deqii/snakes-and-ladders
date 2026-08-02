@@ -17,6 +17,7 @@ const mockState: GameState = {
       color: '#4ade80',
       position: 1,
       isSkipNextTurn: false,
+      hasDoubleDice: false,
     },
     {
       id: 'p2',
@@ -24,6 +25,7 @@ const mockState: GameState = {
       color: '#f472b6',
       position: 1,
       isSkipNextTurn: false,
+      hasDoubleDice: false,
     },
   ],
   currentPlayerIndex: 0,
