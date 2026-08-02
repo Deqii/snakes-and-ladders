@@ -47,7 +47,6 @@ export function resolveChallenge(state: GameState, result: ChallengeResult): Gam
       break
 
     case 'dare-skip':
-      console.log('dare-skip steps:', result.steps)
       newState = updateCurrentPlayer(newState, {
         position: clamp(player.position - result.steps, 1, 100),
       })
@@ -55,7 +54,7 @@ export function resolveChallenge(state: GameState, result: ChallengeResult): Gam
 
     case 'lucky-buff':
       newState = updateCurrentPlayer(newState, {
-        isSkipNextTurn: false,
+        hasDoubleDice: true,
       })
       break
 
@@ -93,6 +92,5 @@ export function resolveChallenge(state: GameState, result: ChallengeResult): Gam
       // No position effect
       break
   }
-
   return newState
 }

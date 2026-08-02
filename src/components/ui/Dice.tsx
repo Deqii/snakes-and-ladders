@@ -1,10 +1,14 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useRef } from 'react'
 import { useGameStore } from '../../stores/gameStore'
 import { useUIStore } from '../../stores/uiStore'
 
 const DICE_FACES = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'] as const
 
-export function Dice() {
+interface DiceProps {
+  challengeCooldownRef: React.RefObject<boolean>
+}
+
+export function Dice({ challengeCooldownRef }: DiceProps) {
   const [isRolling, setIsRolling] = useState(false)
   const [rollingFace, setRollingFace] = useState<string>('⚀')
 
@@ -25,7 +29,10 @@ export function Dice() {
   const displayFace = isRolling ? rollingFace : finalFace
 
   const handleRoll = useCallback(() => {
-    if (phase !== 'idle' || isAnimating || isRolling) return
+    if (phase !== 'idle' || isAnimating || isRolling || challengeCooldownRef.current) return
+
+    const currentPlayer = players?.[currentPlayerIndex ?? 0]
+    const isDoubleDice = currentPlayer?.hasDoubleDice ?? false
 
     rollDice()
     setIsRolling(true)
@@ -40,12 +47,12 @@ export function Dice() {
       setIsRolling(false)
 
       // Build path for animation
-      const path: number[] = []
-      const currentPlayer = players?.[currentPlayerIndex ?? 0]
       const steps = useGameStore.getState().gameState?.lastDiceResult ?? 1
+      const finalSteps = isDoubleDice ? Math.min(steps * 2, 12) : steps
       const startPos = currentPlayer?.position ?? 1
 
-      for (let i = 1; i <= steps; i++) {
+      const path: number[] = []
+      for (let i = 1; i <= finalSteps; i++) {
         const rawPos = startPos + i
         if (rawPos > 100) {
           path.push(100 - (rawPos - 100))
@@ -88,9 +95,11 @@ export function Dice() {
     boardRenderer,
     currentPlayerIndex,
     players,
+    challengeCooldownRef,
   ])
 
   const isDisabled = phase !== 'idle' || isAnimating || isRolling
+  const buttonRef = useRef<HTMLButtonElement>(null)
 
   return (
     <div className="flex flex-col items-center gap-4">
@@ -100,7 +109,10 @@ export function Dice() {
         {displayFace}
       </div>
       <button
+        ref={buttonRef}
+        type="button"
         onClick={handleRoll}
+        onKeyDown={(e) => e.preventDefault()}
         disabled={isDisabled}
         className="min-w-40 rounded-full bg-green-400 ml-4 px-6 py-3 font-bold text-slate-900 transition-all hover:bg-green-300 disabled:cursor-not-allowed disabled:opacity-40"
       >

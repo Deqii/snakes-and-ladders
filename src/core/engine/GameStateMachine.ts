@@ -93,7 +93,10 @@ export function transition(state: GameState, action: GameAction): GameState {
         newPosition = ladder.top
       }
 
-      return updateCurrentPlayer({ ...state, phase: 'moving' }, { position: newPosition })
+      return updateCurrentPlayer(
+        { ...state, phase: 'moving' },
+        { position: newPosition, hasDoubleDice: false },
+      )
     }
 
     case 'LAND_ON_CELL': {
@@ -167,19 +170,23 @@ export function transition(state: GameState, action: GameAction): GameState {
 
       assertValidTransition(state.phase, 'idle')
 
-      // Next player (skip if needed)
       let nextIndex = (state.currentPlayerIndex + 1) % state.players.length
       if (state.players[nextIndex]?.isSkipNextTurn) {
         const skippedPlayer = state.players[nextIndex]
         if (skippedPlayer) {
-          state = {
+          const resetState = {
             ...state,
             players: state.players.map((p, i) =>
               i === nextIndex ? { ...p, isSkipNextTurn: false } : p,
             ),
           }
+          nextIndex = (nextIndex + 1) % resetState.players.length
+          return {
+            ...resetState,
+            phase: 'idle',
+            currentPlayerIndex: nextIndex,
+          }
         }
-        nextIndex = (nextIndex + 1) % state.players.length
       }
 
       return {

@@ -42,6 +42,7 @@ export interface Player {
   color: string
   position: number
   isSkipNextTurn: boolean
+  hasDoubleDice: boolean
 }
 
 // ─── Game Phase ──────────────────────────────────────
