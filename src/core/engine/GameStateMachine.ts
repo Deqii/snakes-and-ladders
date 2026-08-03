@@ -154,9 +154,11 @@ export function transition(state: GameState, action: GameAction): GameState {
           }
           break
         }
-        case 'memory-success':
-          newPosition = clamp(player.position + action.result.bonus, 1, 100)
+        case 'memory-success': {
+          const rawPosition = player.position + action.result.bonus
+          newPosition = rawPosition > 100 ? clamp(100 - (rawPosition - 100), 1, 100) : rawPosition
           break
+        }
       }
 
       return updateCurrentPlayer(

@@ -82,11 +82,14 @@ export function resolveChallenge(state: GameState, result: ChallengeResult): Gam
       break
     }
 
-    case 'memory-success':
+    case 'memory-success': {
+      const rawPosition = player.position + result.bonus
+      const bouncedPosition = rawPosition > 100 ? 100 - (rawPosition - 100) : rawPosition
       newState = updateCurrentPlayer(newState, {
-        position: clamp(player.position + result.bonus, 1, 100),
+        position: clamp(bouncedPosition, 1, 100),
       })
       break
+    }
 
     case 'memory-fail':
       // No position effect

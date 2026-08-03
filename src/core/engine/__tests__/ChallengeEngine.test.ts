@@ -113,12 +113,21 @@ describe('ChallengeEngine', () => {
       expect(next.players[0]?.position).toBe(1)
     })
 
-    it('clamps position to maximum 100', () => {
+    it('bounces back when memory-success bonus exceeds 100', () => {
       const highState: GameState = {
         ...challengeState,
         players: [{ ...mockState.players[0]!, position: 98 }],
       }
       const next = resolveChallenge(highState, { type: 'memory-success', bonus: 10 })
+      expect(next.players[0]?.position).toBe(92)
+    })
+
+    it('wins when memory-success bonus lands exactly on 100', () => {
+      const exactState: GameState = {
+        ...challengeState,
+        players: [{ ...mockState.players[0]!, position: 97 }],
+      }
+      const next = resolveChallenge(exactState, { type: 'memory-success', bonus: 3 })
       expect(next.players[0]?.position).toBe(100)
     })
 
