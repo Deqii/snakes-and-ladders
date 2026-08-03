@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { useGameStore } from '../../stores/gameStore'
 import { DARE_CARDS } from '../../core/engine/dareCards'
 
@@ -17,8 +18,20 @@ export function DareCard({ onDone, onSkip, skipSteps }: DareCardProps) {
   const currentPlayer = useGameStore((s) => s.gameState?.players[s.gameState.currentPlayerIndex])
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-      <div className="w-full max-w-md animate-in fade-in zoom-in-95 duration-200">
+    <motion.div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
+    >
+      <motion.div
+        className="w-full max-w-md"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ duration: 0.2 }}
+      >
         <div className="rounded-2xl bg-gradient-to-br from-rose-500 to-pink-600 p-1 shadow-2xl">
           <div className="rounded-xl bg-slate-900 p-8">
             {/* Header */}
@@ -52,7 +65,7 @@ export function DareCard({ onDone, onSkip, skipSteps }: DareCardProps) {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }
