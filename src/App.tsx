@@ -1,3 +1,5 @@
+import { useRef, useState } from 'react'
+import { AnimatePresence, motion } from 'framer-motion'
 import { BoardCanvas } from './components/board/BoardCanvas'
 import { HUD } from './components/hud/HUD'
 import { Dice } from './components/ui/Dice'
@@ -7,7 +9,6 @@ import { SwapPosition } from './components/challenge/SwapPosition'
 import { MemoryMatch } from './components/challenge/MemoryMatch'
 import { useGameStore } from './stores/gameStore'
 import { useUIStore } from './stores/uiStore'
-import { useRef, useState } from 'react'
 
 function App() {
   const phase = useGameStore((s) => s.gameState?.phase)
@@ -180,59 +181,81 @@ function App() {
       </div>
       <HUD />
 
-      {phase === 'on-challenge' && activeChallenge?.type === 'dare-card' && (
-        <DareCard onDone={handleDareDone} onSkip={handleDareSkip} skipSteps={skipSteps} />
-      )}
-
-      {phase === 'on-challenge' && activeChallenge?.type === 'lucky-draw' && (
-        <LuckyDraw onResult={handleLuckyDraw} />
-      )}
-
-      {phase === 'on-challenge' && activeChallenge?.type === 'swap-position' && (
-        <SwapPosition onSwap={handleSwapPosition} />
-      )}
-
-      {phase === 'on-challenge' && activeChallenge?.type === 'memory-match' && (
-        <MemoryMatch onResult={handleMemoryMatch} />
-      )}
-
-      {/* Temporary fallback for unimplemented challenges */}
-      {phase === 'on-challenge' &&
-        activeChallenge?.type !== 'dare-card' &&
-        activeChallenge?.type !== 'lucky-draw' &&
-        activeChallenge?.type !== 'swap-position' &&
-        activeChallenge?.type !== 'memory-match' && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
-            <div className="rounded-2xl bg-slate-800 p-8 text-center shadow-2xl">
-              <div className="text-4xl">🚧</div>
-              <h2 className="mt-2 text-xl font-bold text-white">
-                {activeChallenge?.type} — Coming Soon
-              </h2>
-              <button
-                onClick={() => endTurn()}
-                className="mt-6 rounded-full bg-slate-600 px-6 py-3 text-sm font-bold text-white hover:bg-slate-500"
-              >
-                Skip →
-              </button>
-            </div>
-          </div>
+      <AnimatePresence>
+        {phase === 'on-challenge' && activeChallenge?.type === 'dare-card' && (
+          <DareCard
+            key="dare-card"
+            onDone={handleDareDone}
+            onSkip={handleDareSkip}
+            skipSteps={skipSteps}
+          />
         )}
 
-      {winner && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
-          <div className="rounded-2xl bg-slate-800 p-12 text-center shadow-2xl">
-            <div className="text-6xl">🎉</div>
-            <h2 className="mt-4 font-display text-4xl font-bold text-white">{winner.name} Wins!</h2>
-            <p className="mt-2 text-slate-400">Congratulations, you reached cell 100!</p>
-            <button
-              onClick={() => startNewGame(['Player 1', 'Player 2'])}
-              className="mt-8 rounded-full bg-green-400 px-8 py-3 font-bold text-slate-900 hover:bg-green-300"
+        {phase === 'on-challenge' && activeChallenge?.type === 'lucky-draw' && (
+          <LuckyDraw key="lucky-draw" onResult={handleLuckyDraw} />
+        )}
+
+        {phase === 'on-challenge' && activeChallenge?.type === 'swap-position' && (
+          <SwapPosition key="swap-position" onSwap={handleSwapPosition} />
+        )}
+
+        {phase === 'on-challenge' && activeChallenge?.type === 'memory-match' && (
+          <MemoryMatch key="memory-match" onResult={handleMemoryMatch} />
+        )}
+
+        {/* Temporary fallback for unimplemented challenges */}
+        {phase === 'on-challenge' &&
+          activeChallenge?.type !== 'dare-card' &&
+          activeChallenge?.type !== 'lucky-draw' &&
+          activeChallenge?.type !== 'swap-position' &&
+          activeChallenge?.type !== 'memory-match' && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+              <div className="rounded-2xl bg-slate-800 p-8 text-center shadow-2xl">
+                <div className="text-4xl">🚧</div>
+                <h2 className="mt-2 text-xl font-bold text-white">
+                  {activeChallenge?.type} — Coming Soon
+                </h2>
+                <button
+                  onClick={() => endTurn()}
+                  className="mt-6 rounded-full bg-slate-600 px-6 py-3 text-sm font-bold text-white hover:bg-slate-500"
+                >
+                  Skip →
+                </button>
+              </div>
+            </div>
+          )}
+
+        {winner && (
+          <motion.div
+            key="winner"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.2 }}
+          >
+            <motion.div
+              className="rounded-2xl bg-slate-800 p-12 text-center shadow-2xl"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.9 }}
+              transition={{ duration: 0.25 }}
             >
-              🎲 Main Lagi
-            </button>
-          </div>
-        </div>
-      )}
+              <div className="text-6xl">🎉</div>
+              <h2 className="mt-4 font-display text-4xl font-bold text-white">
+                {winner.name} Wins!
+              </h2>
+              <p className="mt-2 text-slate-400">Congratulations, you reached cell 100!</p>
+              <button
+                onClick={() => startNewGame(['Player 1', 'Player 2'])}
+                className="mt-8 rounded-full bg-green-400 px-8 py-3 font-bold text-slate-900 hover:bg-green-300"
+              >
+                🎲 Play Again
+              </button>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

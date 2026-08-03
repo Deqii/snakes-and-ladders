@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { motion } from 'framer-motion'
 import { useGameStore } from '../../stores/gameStore'
 
 type CardResult = 'buff' | 'debuff'
@@ -39,11 +40,21 @@ export function LuckyDraw({ onResult }: LuckyDrawProps) {
   }
 
   return (
-    <div
+    <motion.div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4"
       onClick={(e) => e.stopPropagation()}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.2 }}
     >
-      <div className="w-full max-w-md">
+      <motion.div
+        className="w-full max-w-md"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        exit={{ opacity: 0, scale: 0.95 }}
+        transition={{ duration: 0.2 }}
+      >
         <div className="rounded-2xl bg-slate-800 p-8 shadow-2xl">
           {/* Header */}
           <div className="mb-6 text-center">
@@ -116,7 +127,7 @@ export function LuckyDraw({ onResult }: LuckyDrawProps) {
             <p className="text-center text-xs text-slate-500">1 lucky card, 2 unlucky cards</p>
           )}
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   )
 }
