@@ -135,11 +135,21 @@ export function transition(state: GameState, action: GameAction): GameState {
           newPosition = clamp(player.position - 3, 1, 100)
           break
         case 'swap-done': {
-          const targetIndex = state.players.findIndex((p) => p.id === action.result.type)
+          const { targetPlayerId } = action.result
+          const targetIndex = state.players.findIndex((p) => p.id === targetPlayerId)
           if (targetIndex !== -1) {
             const target = state.players[targetIndex]
             if (target) {
-              newPosition = target.position
+              return {
+                ...state,
+                phase: 'turn-end',
+                activeChallenge: null,
+                players: state.players.map((p, i) => {
+                  if (i === state.currentPlayerIndex) return { ...p, position: target.position }
+                  if (i === targetIndex) return { ...p, position: player.position }
+                  return p
+                }),
+              }
             }
           }
           break

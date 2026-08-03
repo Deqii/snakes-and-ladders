@@ -164,5 +164,40 @@ describe('GameStateMachine', () => {
       })
       expect(next.players[0]?.position).toBe(18)
     })
+
+    it('swaps positions between players on swap-done', () => {
+      const challengeState = {
+        ...mockState,
+        phase: 'on-challenge' as const,
+        players: [
+          { ...mockState.players[0]!, position: 15 },
+          { ...mockState.players[1]!, position: 40 },
+        ],
+      }
+      const next = transition(challengeState, {
+        type: 'RESOLVE_CHALLENGE',
+        result: { type: 'swap-done', targetPlayerId: 'p2' },
+      })
+      expect(next.players[0]?.position).toBe(40)
+      expect(next.players[1]?.position).toBe(15)
+    })
+
+    it('leaves positions unchanged if targetPlayerId does not exist', () => {
+      const challengeState = {
+        ...mockState,
+        phase: 'on-challenge' as const,
+        players: [
+          { ...mockState.players[0]!, position: 15 },
+          { ...mockState.players[1]!, position: 40 },
+        ],
+      }
+      const next = transition(challengeState, {
+        type: 'RESOLVE_CHALLENGE',
+        result: { type: 'swap-done', targetPlayerId: 'nonexistent' },
+      })
+      expect(next.players[0]?.position).toBe(15)
+      expect(next.players[1]?.position).toBe(40)
+      expect(next.phase).toBe('turn-end')
+    })
   })
 })

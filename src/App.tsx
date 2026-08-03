@@ -2,6 +2,7 @@ import { BoardCanvas } from './components/board/BoardCanvas'
 import { Dice } from './components/ui/Dice'
 import { DareCard } from './components/challenge/DareCard'
 import { LuckyDraw } from './components/challenge/LuckyDraw'
+import { SwapPosition } from './components/challenge/SwapPosition'
 import { useGameStore } from './stores/gameStore'
 import { useUIStore } from './stores/uiStore'
 import { useRef, useState } from 'react'
@@ -101,6 +102,31 @@ function App() {
     }
   }
 
+  const handleSwapPosition = (targetPlayerId: string) => {
+    const state = useGameStore.getState().gameState
+    const players = state?.players ?? []
+    const currentPlayerIndex = state?.currentPlayerIndex ?? 0
+    const currentPlayer = players[currentPlayerIndex]
+    const targetIndex = players.findIndex((p) => p.id === targetPlayerId)
+    const targetPlayer = players[targetIndex]
+    const boardRenderer = useUIStore.getState().boardRenderer
+
+    resolveChallenge({ type: 'swap-done', targetPlayerId })
+
+    if (boardRenderer && currentPlayer && targetPlayer && targetIndex !== -1) {
+      boardRenderer.animatePlayerMove(currentPlayerIndex, [targetPlayer.position])
+      boardRenderer.animatePlayerMove(targetIndex, [currentPlayer.position])
+      setTimeout(() => {
+        const latestPhase = useGameStore.getState().gameState?.phase
+        if (latestPhase === 'turn-end') {
+          endTurn()
+        }
+      }, 400)
+    } else {
+      endTurn()
+    }
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-900 p-8">
       <BoardCanvas />
@@ -114,10 +140,15 @@ function App() {
         <LuckyDraw onResult={handleLuckyDraw} />
       )}
 
+      {phase === 'on-challenge' && activeChallenge?.type === 'swap-position' && (
+        <SwapPosition onSwap={handleSwapPosition} />
+      )}
+
       {/* Temporary fallback for unimplemented challenges */}
       {phase === 'on-challenge' &&
         activeChallenge?.type !== 'dare-card' &&
-        activeChallenge?.type !== 'lucky-draw' && (
+        activeChallenge?.type !== 'lucky-draw' &&
+        activeChallenge?.type !== 'swap-position' && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
             <div className="rounded-2xl bg-slate-800 p-8 text-center shadow-2xl">
               <div className="text-4xl">🚧</div>
