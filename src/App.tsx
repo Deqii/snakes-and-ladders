@@ -3,6 +3,7 @@ import { Dice } from './components/ui/Dice'
 import { DareCard } from './components/challenge/DareCard'
 import { LuckyDraw } from './components/challenge/LuckyDraw'
 import { SwapPosition } from './components/challenge/SwapPosition'
+import { MemoryMatch } from './components/challenge/MemoryMatch'
 import { useGameStore } from './stores/gameStore'
 import { useUIStore } from './stores/uiStore'
 import { useRef, useState } from 'react'
@@ -127,6 +128,49 @@ function App() {
     }
   }
 
+  const handleMemoryMatch = (result: { success: boolean; bonus: number }) => {
+    if (!result.success) {
+      resolveChallenge({ type: 'memory-fail' })
+      endTurn()
+      return
+    }
+
+    const currentPlayer =
+      useGameStore.getState().gameState?.players[
+        useGameStore.getState().gameState?.currentPlayerIndex ?? 0
+      ]
+    const boardRenderer = useUIStore.getState().boardRenderer
+    const currentPlayerIndex = useGameStore.getState().gameState?.currentPlayerIndex ?? 0
+    const startPos = currentPlayer?.position ?? 1
+
+    const path: number[] = []
+    for (let i = 1; i <= result.bonus; i++) {
+      const raw = startPos + i
+      const step = raw > 100 ? 100 - (raw - 100) : raw
+      path.push(step)
+    }
+
+    resolveChallenge({ type: 'memory-success', bonus: result.bonus })
+
+    if (boardRenderer) {
+      boardRenderer.animatePlayerMove(currentPlayerIndex, path)
+      setTimeout(
+        () => {
+          const latestPhase = useGameStore.getState().gameState?.phase
+          if (latestPhase === 'turn-end') {
+            endTurn()
+          }
+        },
+        result.bonus * 150 + 100,
+      )
+    } else {
+      const latestPhase = useGameStore.getState().gameState?.phase
+      if (latestPhase === 'turn-end') {
+        endTurn()
+      }
+    }
+  }
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-slate-900 p-8">
       <BoardCanvas />
@@ -144,11 +188,16 @@ function App() {
         <SwapPosition onSwap={handleSwapPosition} />
       )}
 
+      {phase === 'on-challenge' && activeChallenge?.type === 'memory-match' && (
+        <MemoryMatch onResult={handleMemoryMatch} />
+      )}
+
       {/* Temporary fallback for unimplemented challenges */}
       {phase === 'on-challenge' &&
         activeChallenge?.type !== 'dare-card' &&
         activeChallenge?.type !== 'lucky-draw' &&
-        activeChallenge?.type !== 'swap-position' && (
+        activeChallenge?.type !== 'swap-position' &&
+        activeChallenge?.type !== 'memory-match' && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
             <div className="rounded-2xl bg-slate-800 p-8 text-center shadow-2xl">
               <div className="text-4xl">🚧</div>
