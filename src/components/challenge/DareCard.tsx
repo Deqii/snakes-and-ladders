@@ -26,7 +26,7 @@ export function DareCard({ onDone, onSkip, skipSteps }: DareCardProps) {
               <div className="text-4xl">🎴</div>
               <h2 className="mt-2 font-bold text-rose-400">Dare Card</h2>
               <p className="text-sm text-slate-400">
-                {currentPlayer?.name ?? 'Player'} harus melakukan tantangan ini!
+                {currentPlayer?.name ?? 'Player'} must complete this challenge!
               </p>
             </div>
 
@@ -41,13 +41,13 @@ export function DareCard({ onDone, onSkip, skipSteps }: DareCardProps) {
                 onClick={onSkip}
                 className="flex-1 rounded-full border border-slate-600 py-3 text-sm font-semibold text-slate-400 transition-all hover:border-slate-400 hover:text-slate-200"
               >
-                🏳️ Skip (−{skipSteps} kotak)
+                🏳️ Skip (−{skipSteps} cell{skipSteps === 1 ? '' : 's'})
               </button>
               <button
                 onClick={onDone}
                 className="flex-1 rounded-full bg-rose-500 py-3 text-sm font-semibold text-white transition-all hover:bg-rose-400"
               >
-                ✅ Selesai!
+                ✅ Done!
               </button>
             </div>
           </div>

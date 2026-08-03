@@ -55,8 +55,8 @@ export function SwapPosition({ onSwap }: SwapPositionProps) {
               <h2 className="mt-2 text-xl font-bold text-sky-400">Swap Position</h2>
               <p className="mt-1 text-sm text-slate-400">
                 {isTwoPlayer
-                  ? `${currentPlayer?.name ?? 'Player'} akan bertukar posisi!`
-                  : `${currentPlayer?.name ?? 'Player'}, pilih lawan untuk bertukar posisi!`}
+                  ? `${currentPlayer?.name ?? 'Player'} is about to swap positions!`
+                  : `${currentPlayer?.name ?? 'Player'}, pick an opponent to swap with!`}
               </p>
             </div>
 
@@ -88,7 +88,7 @@ export function SwapPosition({ onSwap }: SwapPositionProps) {
                         </span>
                         <span className="font-medium text-white">{opponent.name}</span>
                       </div>
-                      <span className="text-sm text-slate-400">Kotak {opponent.position}</span>
+                      <span className="text-sm text-slate-400">Cell {opponent.position}</span>
                     </button>
                   )
                 })}
@@ -104,7 +104,7 @@ export function SwapPosition({ onSwap }: SwapPositionProps) {
                   >
                     {currentPlayer.name.charAt(0).toUpperCase()}
                   </span>
-                  <p className="mt-2 text-xs text-slate-400">Kotak {currentPlayer.position}</p>
+                  <p className="mt-2 text-xs text-slate-400">Cell {currentPlayer.position}</p>
                 </div>
                 <span className="text-2xl text-sky-400">⇄</span>
                 <div className="text-center">
@@ -114,13 +114,15 @@ export function SwapPosition({ onSwap }: SwapPositionProps) {
                   >
                     {selectedPlayer.name.charAt(0).toUpperCase()}
                   </span>
-                  <p className="mt-2 text-xs text-slate-400">Kotak {selectedPlayer.position}</p>
+                  <p className="mt-2 text-xs text-slate-400">Cell {selectedPlayer.position}</p>
                 </div>
               </div>
             )}
 
             {selectedId && (
-              <p className="mt-4 text-center text-xs font-medium text-sky-400">Menukar posisi...</p>
+              <p className="mt-4 text-center text-xs font-medium text-sky-400">
+                Swapping positions...
+              </p>
             )}
           </div>
         </div>

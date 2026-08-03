@@ -1,4 +1,4 @@
-import type { GameState, GamePhase, DiceResult, Player } from '../types/index'
+import type { GameState, GamePhase, DiceResult, Player, GameEvent } from '../types/index'
 
 // ─── Actions ─────────────────────────────────────────
 export type GameAction =
@@ -81,22 +81,44 @@ export function transition(state: GameState, action: GameAction): GameState {
         newPosition = rawPosition
       }
 
+      const positionAfterDice = newPosition
+      let newEvent: GameEvent | null = null
+
       // Check snake
       const snake = state.board.snakes.find((s) => s.head === newPosition)
       if (snake) {
+        newEvent = {
+          type: 'snake',
+          player: player.id,
+          from: positionAfterDice,
+          to: snake.tail,
+        }
         newPosition = snake.tail
       }
 
       // Check ladder
       const ladder = state.board.ladders.find((l) => l.bottom === newPosition)
       if (ladder) {
+        newEvent = {
+          type: 'ladder',
+          player: player.id,
+          from: positionAfterDice,
+          to: ladder.top,
+        }
         newPosition = ladder.top
       }
 
-      return updateCurrentPlayer(
+      const nextState = updateCurrentPlayer(
         { ...state, phase: 'moving' },
         { position: newPosition, hasDoubleDice: false },
       )
+
+      if (!newEvent) return nextState
+
+      return {
+        ...nextState,
+        eventLog: [...nextState.eventLog, newEvent],
+      }
     }
 
     case 'LAND_ON_CELL': {
@@ -105,6 +127,12 @@ export function transition(state: GameState, action: GameAction): GameState {
 
       if (challenge) {
         assertValidTransition(state.phase, 'on-challenge')
+        const event: GameEvent = {
+          type: 'challenge',
+          player: player.id,
+          cell: challenge.cellIndex,
+          challengeType: challenge.challengeType,
+        }
         return {
           ...state,
           phase: 'on-challenge',
@@ -112,6 +140,7 @@ export function transition(state: GameState, action: GameAction): GameState {
             type: challenge.challengeType,
             cellIndex: challenge.cellIndex,
           },
+          eventLog: [...state.eventLog, event],
         }
       }
 
@@ -173,10 +202,12 @@ export function transition(state: GameState, action: GameAction): GameState {
       // Check win
       if (player.position >= 100) {
         assertValidTransition(state.phase, 'win')
+        const event: GameEvent = { type: 'win', player: player.id }
         return {
           ...state,
           phase: 'win',
           winner: player,
+          eventLog: [...state.eventLog, event],
         }
       }
 

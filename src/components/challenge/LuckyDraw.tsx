@@ -50,7 +50,7 @@ export function LuckyDraw({ onResult }: LuckyDrawProps) {
             <div className="text-4xl">🃏</div>
             <h2 className="mt-2 text-xl font-bold text-amber-400">Lucky Draw</h2>
             <p className="mt-1 text-sm text-slate-400">
-              {currentPlayer?.name ?? 'Player'}, pilih 1 kartu!
+              {currentPlayer?.name ?? 'Player'}, pick 1 card!
             </p>
           </div>
 
@@ -105,15 +105,15 @@ export function LuckyDraw({ onResult }: LuckyDrawProps) {
               }`}
             >
               {result === 'buff' ? (
-                <p className="font-bold">⭐ Beruntung! Lempar dadu 2x giliran berikutnya!</p>
+                <p className="font-bold">⭐ Lucky! Roll the dice twice next turn!</p>
               ) : (
-                <p className="font-bold">💀 Sial! Mundur 3 kotak!</p>
+                <p className="font-bold">💀 Lucky! Roll the dice twice next turn!</p>
               )}
             </div>
           )}
 
           {!result && (
-            <p className="text-center text-xs text-slate-500">1 kartu beruntung, 2 kartu sial</p>
+            <p className="text-center text-xs text-slate-500">1 lucky card, 2 unlucky cards</p>
           )}
         </div>
       </div>
