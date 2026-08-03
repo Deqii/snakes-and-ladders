@@ -39,29 +39,35 @@ export function resolveChallenge(state: GameState, result: ChallengeResult): Gam
   const player = state.players[state.currentPlayerIndex]
   if (!player) return state
 
+  const activeChallengeType = state.activeChallenge?.type ?? null
+
   let newState: GameState = { ...state, phase: 'turn-end' as const, activeChallenge: null }
+  let description = ''
 
   switch (result.type) {
     case 'dare-done':
-      // No position effect
+      description = 'Done! No position effect.'
       break
 
     case 'dare-skip':
       newState = updateCurrentPlayer(newState, {
         position: clamp(player.position - result.steps, 1, 100),
       })
+      description = `Skipped! Moved back ${result.steps} cell${result.steps === 1 ? '' : 's'}.`
       break
 
     case 'lucky-buff':
       newState = updateCurrentPlayer(newState, {
         hasDoubleDice: true,
       })
+      description = 'Buff! Got a double dice'
       break
 
     case 'lucky-debuff':
       newState = updateCurrentPlayer(newState, {
         position: clamp(player.position - 3, 1, 100),
       })
+      description = 'Debuff! Moved back 3 cells.'
       break
 
     case 'swap-done': {
@@ -77,6 +83,7 @@ export function resolveChallenge(state: GameState, result: ChallengeResult): Gam
               return p
             }),
           }
+          description = `Swapped positions with ${target.name}`
         }
       }
       break
@@ -88,12 +95,28 @@ export function resolveChallenge(state: GameState, result: ChallengeResult): Gam
       newState = updateCurrentPlayer(newState, {
         position: clamp(bouncedPosition, 1, 100),
       })
+      description = `Success! Moved forward ${result.bonus} cell${result.bonus === 1 ? '' : 's'}.`
       break
     }
 
     case 'memory-fail':
-      // No position effect
+      description = "Time's up! No effect."
       break
+  }
+
+  if (activeChallengeType && description) {
+    newState = {
+      ...newState,
+      eventLog: [
+        ...newState.eventLog,
+        {
+          type: 'challenge-result',
+          player: player.id,
+          challengeType: activeChallengeType,
+          description,
+        },
+      ],
+    }
   }
   return newState
 }

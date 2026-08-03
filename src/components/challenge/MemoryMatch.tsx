@@ -150,7 +150,7 @@ export function MemoryMatch({ onResult }: MemoryMatchProps) {
               <div className="text-4xl">🧠</div>
               <h2 className="mt-2 text-xl font-bold text-violet-400">Memory Match</h2>
               <p className="mt-1 text-sm text-slate-400">
-                {currentPlayer?.name ?? 'Player'}, cocokkan {PAIR_COUNT} pasang kartu!
+                {currentPlayer?.name ?? 'Player'}, match {PAIR_COUNT} pairs of cards!
               </p>
             </div>
 
@@ -211,14 +211,14 @@ export function MemoryMatch({ onResult }: MemoryMatchProps) {
                 <p className="font-bold">
                   {' '}
                   {earnedBonus !== null
-                    ? `🎉 Berhasil! Maju ${earnedBonus} kotak!`
-                    : '🎉 Berhasil!'}
+                    ? `🎉 Success! Moved forward ${earnedBonus} cell${earnedBonus === 1 ? '' : 's'}!`
+                    : '🎉 Success!'}
                 </p>
               </div>
             )}
             {outcome === 'fail' && (
               <div className="rounded-xl bg-red-500/20 p-4 text-center text-red-400">
-                <p className="font-bold">⏰ Waktu habis! Tidak ada efek.</p>
+                <p className="font-bold">⏰ Time's up! No effect.</p>
               </div>
             )}
           </div>

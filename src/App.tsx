@@ -1,4 +1,5 @@
 import { BoardCanvas } from './components/board/BoardCanvas'
+import { HUD } from './components/hud/HUD'
 import { Dice } from './components/ui/Dice'
 import { DareCard } from './components/challenge/DareCard'
 import { LuckyDraw } from './components/challenge/LuckyDraw'
@@ -172,9 +173,12 @@ function App() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-slate-900 p-8">
-      <BoardCanvas />
-      <Dice challengeCooldownRef={challengeCooldownRef} />
+    <div className="flex min-h-screen flex-col items-center justify-center gap-6 bg-slate-900 p-4 lg:flex-row lg:items-start lg:justify-center lg:p-8">
+      <div className="flex w-full flex-1 flex-col items-center gap-4 lg:w-auto">
+        <BoardCanvas />
+        <Dice challengeCooldownRef={challengeCooldownRef} />
+      </div>
+      <HUD />
 
       {phase === 'on-challenge' && activeChallenge?.type === 'dare-card' && (
         <DareCard onDone={handleDareDone} onSkip={handleDareSkip} skipSteps={skipSteps} />
@@ -218,10 +222,8 @@ function App() {
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-4">
           <div className="rounded-2xl bg-slate-800 p-12 text-center shadow-2xl">
             <div className="text-6xl">🎉</div>
-            <h2 className="mt-4 font-display text-4xl font-bold text-white">
-              {winner.name} Menang!
-            </h2>
-            <p className="mt-2 text-slate-400">Selamat telah mencapai kotak 100!</p>
+            <h2 className="mt-4 font-display text-4xl font-bold text-white">{winner.name} Wins!</h2>
+            <p className="mt-2 text-slate-400">Congratulations, you reached cell 100!</p>
             <button
               onClick={() => startNewGame(['Player 1', 'Player 2'])}
               className="mt-8 rounded-full bg-green-400 px-8 py-3 font-bold text-slate-900 hover:bg-green-300"

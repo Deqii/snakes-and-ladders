@@ -53,6 +53,7 @@ export type GameEvent =
   | { type: 'snake'; player: string; from: number; to: number }
   | { type: 'ladder'; player: string; from: number; to: number }
   | { type: 'challenge'; player: string; cell: number; challengeType: ChallengeType }
+  | { type: 'challenge-result'; player: string; challengeType: ChallengeType; description: string }
   | { type: 'win'; player: string }
 
 // ─── Game State ──────────────────────────────────────
