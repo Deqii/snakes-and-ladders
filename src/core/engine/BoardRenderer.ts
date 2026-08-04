@@ -1,5 +1,6 @@
 import type { Board, Player } from '../types/index'
 import { useUIStore } from '../../stores/uiStore'
+import { ParticlePool } from './ParticlePool'
 
 // ─── Constants ───────────────────────────────────────
 const COLORS = {
@@ -12,8 +13,8 @@ const COLORS = {
   challenge: '#f59e0b',
   challengeText: '#1c1c1c',
 } as const
-
-// ─── Helpers ─────────────────────────────────────────
+const TRAIL_MAX_PARTICLES = 60
+const TRAIL_SPAWN_INTERVAL = 0.02 // seconds between trail particle spawns
 
 /**
  * Convert cell index (1-100) to canvas x,y coordinates.
@@ -41,6 +42,9 @@ export class BoardRenderer {
   private animToPos: number = 0
   private rafId: number | null = null
   private observer: ResizeObserver
+  private trailPool: ParticlePool = new ParticlePool(TRAIL_MAX_PARTICLES)
+  private lastFrameTime: number = performance.now()
+  private lastTrailSpawnTime: number = 0
 
   constructor(canvas: HTMLCanvasElement) {
     this.canvas = canvas
@@ -94,7 +98,7 @@ export class BoardRenderer {
     this.animToPos = next
     this.animProgress = 0
 
-    const duration = 150
+    const duration = 200
     const startTime = performance.now()
 
     const step = (now: number) => {
@@ -109,6 +113,7 @@ export class BoardRenderer {
         )
       }
 
+      this.spawnTrailParticle()
       this.draw()
 
       if (this.animProgress < 1) {
@@ -121,9 +126,41 @@ export class BoardRenderer {
     requestAnimationFrame(step)
   }
 
+  private spawnTrailParticle(): void {
+    const now = performance.now()
+    if ((now - this.lastTrailSpawnTime) / 1000 < TRAIL_SPAWN_INTERVAL) return
+    this.lastTrailSpawnTime = now
+
+    const player = this.players[this.animatingPlayerIndex]
+    if (!player) return
+
+    const from = cellToXY(this.animFromPos, this.cellSize)
+    const to = cellToXY(this.animToPos, this.cellSize)
+    const lerp = (a: number, b: number) => a + (b - a) * this.animProgress
+
+    const cx = lerp(from.x, to.x) + this.cellSize / 2
+    const cy = lerp(from.y, to.y) + this.cellSize / 2
+
+    this.trailPool.spawn({
+      x: cx + (Math.random() - 0.5) * this.cellSize * 0.2,
+      y: cy + (Math.random() - 0.5) * this.cellSize * 0.2,
+      vx: (Math.random() - 0.5) * 10,
+      vy: (Math.random() - 0.5) * 10,
+      size: this.cellSize * 0.12,
+      color: player.color,
+      life: 0.8,
+    })
+  }
+
   start(): void {
-    const loop = () => {
+    this.lastFrameTime = performance.now()
+    const loop = (now: number) => {
+      const dt = Math.min((now - this.lastFrameTime) / 1000, 0.05)
+      this.lastFrameTime = now
+
+      this.trailPool.update(dt)
       this.draw()
+
       this.rafId = requestAnimationFrame(loop)
     }
     this.rafId = requestAnimationFrame(loop)
@@ -139,6 +176,7 @@ export class BoardRenderer {
   destroy(): void {
     this.stop()
     this.observer.disconnect()
+    this.trailPool.clear()
   }
 
   // ─── Resize ────────────────────────────────────────
@@ -174,6 +212,7 @@ export class BoardRenderer {
       this.drawSnakes()
       this.drawLadders()
       this.drawChallengeBlocks()
+      this.drawTrail()
       this.drawTokens()
     }
   }
@@ -300,6 +339,23 @@ export class BoardRenderer {
       ctx.textAlign = 'center'
       ctx.textBaseline = 'middle'
       ctx.fillText('?', x + cellSize / 2, y + cellSize / 2)
+    }
+  }
+
+  // ─── Draw Trail ────────────────────────────────────
+  private drawTrail(): void {
+    const { ctx } = this
+
+    for (const p of this.trailPool.getActive()) {
+      const alpha = Math.max(p.life / p.maxLife, 0)
+      const scale = alpha // shrink as it fades
+
+      ctx.beginPath()
+      ctx.arc(p.x, p.y, p.size * scale, 0, Math.PI * 2)
+      ctx.fillStyle = p.color
+      ctx.globalAlpha = alpha * 0.5
+      ctx.fill()
+      ctx.globalAlpha = 1
     }
   }
 

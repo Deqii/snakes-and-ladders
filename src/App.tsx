@@ -9,6 +9,7 @@ import { SwapPosition } from './components/challenge/SwapPosition'
 import { MemoryMatch } from './components/challenge/MemoryMatch'
 import { useGameStore } from './stores/gameStore'
 import { useUIStore } from './stores/uiStore'
+import { Confetti } from './components/ui/Confetti'
 
 function App() {
   const phase = useGameStore((s) => s.gameState?.phase)
@@ -47,7 +48,7 @@ function App() {
         () => {
           endTurn()
         },
-        skipSteps * 150 + 100,
+        skipSteps * 200 + 100,
       )
     } else {
       endTurn()
@@ -94,7 +95,7 @@ function App() {
               endTurn()
             }
           },
-          steps * 150 + 100,
+          steps * 200 + 100,
         )
       } else {
         const latestPhase = useGameStore.getState().gameState?.phase
@@ -163,7 +164,7 @@ function App() {
             endTurn()
           }
         },
-        result.bonus * 150 + 100,
+        result.bonus * 200 + 100,
       )
     } else {
       const latestPhase = useGameStore.getState().gameState?.phase
@@ -224,6 +225,8 @@ function App() {
               </div>
             </div>
           )}
+
+        {winner && <Confetti key="confetti" />}
 
         {winner && (
           <motion.div
