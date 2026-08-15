@@ -1,8 +1,10 @@
 import { useState, useCallback, useRef } from 'react'
 import { useGameStore } from '../../stores/gameStore'
 import { useUIStore } from '../../stores/uiStore'
+import { DiceFace } from './DiceFace'
 
-const DICE_FACES = ['⚀', '⚁', '⚂', '⚃', '⚄', '⚅'] as const
+const DICE_FACES = [1, 2, 3, 4, 5, 6] as const
+type DiceFaceValue = (typeof DICE_FACES)[number]
 
 interface DiceProps {
   challengeCooldownRef: React.RefObject<boolean>
@@ -10,7 +12,7 @@ interface DiceProps {
 
 export function Dice({ challengeCooldownRef }: DiceProps) {
   const [isRolling, setIsRolling] = useState(false)
-  const [rollingFace, setRollingFace] = useState<string>('⚀')
+  const [rollingFace, setRollingFace] = useState<DiceFaceValue>(1)
 
   const phase = useGameStore((s) => s.gameState?.phase)
   const lastDiceResult = useGameStore((s) => s.gameState?.lastDiceResult)
@@ -25,7 +27,7 @@ export function Dice({ challengeCooldownRef }: DiceProps) {
   const endTurn = useGameStore((s) => s.endTurn)
 
   // Derived: show final face when not rolling
-  const finalFace = lastDiceResult ? DICE_FACES[lastDiceResult - 1] : '⚀'
+  const finalFace: DiceFaceValue = lastDiceResult ? (DICE_FACES[lastDiceResult - 1] ?? 1) : 1
   const displayFace = isRolling ? rollingFace : finalFace
 
   const handleRoll = useCallback(() => {
@@ -73,7 +75,7 @@ export function Dice({ challengeCooldownRef }: DiceProps) {
               endTurn()
             }
           },
-          steps * 150 + 100,
+          steps * 300 + 100,
         )
       } else {
         movePlayer()
@@ -106,7 +108,11 @@ export function Dice({ challengeCooldownRef }: DiceProps) {
       <div
         className={`text-8xl text-white ml-4 transition-transform duration-100 ${isRolling ? 'scale-110' : 'scale-100'}`}
       >
-        {displayFace}
+        <DiceFace
+          face={displayFace}
+          size={96}
+          className={`ml-4 transition-transform duration-100 ${isRolling ? 'scale-110' : 'scale-100'}`}
+        />
       </div>
       <button
         ref={buttonRef}
